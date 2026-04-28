@@ -1,0 +1,48 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user performance metrics and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "skillLevel": { "type": "string", "enum": ["beginner", "intermediate", "advanced", "elite"] },
+        "preferredSport": { "type": "string" },
+        "avgReactionTime": { "type": "number" },
+        "accuracy": { "type": "number" },
+        "streak": { "type": "number" },
+        "totalTrainingHours": { "type": "number" }
+      },
+      "required": ["uid", "displayName"]
+    },
+    "TrainingSession": {
+      "title": "Training Session",
+      "description": "Records the outcome of a specific training drill.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sport": { "type": "string" },
+        "drillName": { "type": "string" },
+        "score": { "type": "number" },
+        "reactionTime": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "sport", "drillName", "score", "timestamp"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data."
+    },
+    "/sessions/{sessionId}": {
+      "schema": "TrainingSession",
+      "description": "Global log of training sessions."
+    }
+  }
+}

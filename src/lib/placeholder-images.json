@@ -1,0 +1,64 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-pro",
+      "description": "Elite athlete training with AR neural tracking",
+      "imageUrl": "https://picsum.photos/seed/reflexes-hero/1200/1000",
+      "imageHint": "athlete training"
+    },
+    {
+      "id": "cricket-main",
+      "description": "Professional cricket focus drill",
+      "imageUrl": "https://picsum.photos/seed/cricket-lab/1200/800",
+      "imageHint": "cricket athlete"
+    },
+    {
+      "id": "tennis-main",
+      "description": "High-velocity serve return machine",
+      "imageUrl": "https://picsum.photos/seed/tennis-lab/800/1000",
+      "imageHint": "tennis player"
+    },
+    {
+      "id": "soccer-main",
+      "description": "Spatial awareness goalkeeper drill",
+      "imageUrl": "https://picsum.photos/seed/soccer-lab/800/1000",
+      "imageHint": "soccer goalkeeper"
+    },
+    {
+      "id": "boxing-main",
+      "description": "Elite fatigue resistance boxing",
+      "imageUrl": "https://picsum.photos/seed/boxing-lab/800/1000",
+      "imageHint": "boxing training"
+    },
+    {
+      "id": "circuit-main",
+      "description": "Multi-disciplinary cognitive circuit",
+      "imageUrl": "https://picsum.photos/seed/circuit-training/1200/800",
+      "imageHint": "athlete training"
+    },
+    {
+      "id": "cricket-thumbnail",
+      "description": "Cricket specialization path",
+      "imageUrl": "https://picsum.photos/seed/cricket-thumb/600/600",
+      "imageHint": "cricket"
+    },
+    {
+      "id": "soccer-thumbnail",
+      "description": "Soccer specialization path",
+      "imageUrl": "https://picsum.photos/seed/soccer-thumb/600/600",
+      "imageHint": "soccer"
+    },
+    {
+      "id": "tennis-thumbnail",
+      "description": "Tennis specialization path",
+      "imageUrl": "https://picsum.photos/seed/tennis-thumb/600/600",
+      "imageHint": "tennis"
+    },
+    {
+      "id": "boxing-thumbnail",
+      "description": "Boxing specialization path",
+      "imageUrl": "https://picsum.photos/seed/boxing-thumb/600/600",
+      "imageHint": "boxing"
+    }
+  ]
+}
