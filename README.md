@@ -11,6 +11,16 @@ Professional cognitive training for athletes. Sport-specific drills that measura
 
 ---
 
+<p align="center">
+  <img src="screenshots/landing.png" alt="Choose Your Discipline" width="720">
+</p>
+
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="Training Dashboard" width="720">
+</p>
+
+---
+
 ## How it works
 
 Choose your sport. Calibrate your baseline. Train.
