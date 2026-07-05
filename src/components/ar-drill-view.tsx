@@ -126,16 +126,14 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
         
         setTargets(prev => [...prev, newTarget])
 
-        let depth = 0.1
-        const animInterval = setInterval(() => {
-          depth += 0.05
-          if (depth >= 1) {
-            clearInterval(animInterval)
-            setTargets(prev => prev.filter(t => t.id !== ballId))
-          } else {
-            setTargets(prev => prev.map(t => t.id === ballId ? { ...t, z: depth } : t))
-          }
-        }, 30)
+        // Trigger CSS transition instead of React state animation
+        setTimeout(() => {
+          setTargets(prev => prev.map(t => t.id === ballId ? { ...t, z: 1 } : t))
+        }, 50)
+
+        setTimeout(() => {
+          setTargets(prev => prev.filter(t => t.id !== ballId))
+        }, 600)
 
       }, 300)
     } else {
@@ -383,7 +381,9 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
                 left: `${t.x}%`, 
                 top: `${t.y}%`,
                 transform: `scale(${t.z})`,
-                opacity: t.z
+                opacity: t.z,
+                transitionDuration: t.type === 'ball' ? '550ms' : '200ms',
+                transitionTimingFunction: 'linear'
               }}
             >
               <div 
