@@ -1,0 +1,3 @@
+## 2024-03-08 - Canvas Image Data Processing Cache Locality
+**Learning:** Found a specific bottleneck in AR drill view (`src/components/ar-drill-view.tsx`). Iterating over 1D canvas `ImageData` array with the `x` loop as the outer loop and the `y` loop as the inner loop causes severe CPU cache thrashing because image data is laid out in memory in row-major order (consecutive pixels in memory are on the same row).
+**Action:** Always write image processing loops with `y` (rows) on the outside and `x` (columns) on the inside to leverage spatial cache locality, and hoist row calculations outside the inner loop.
