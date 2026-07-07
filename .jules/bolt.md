@@ -1,0 +1,3 @@
+## 2025-02-28 - Optimizing requestAnimationFrame pixel processing
+**Learning:** `ImageData` arrays in Canvas API are one-dimensional and row-major. Iterating through pixels column-major (x outer loop, y inner loop) causes catastrophic cache misses on every pixel. Furthermore, allocating objects (like coordinate arrays) inside `requestAnimationFrame` creates unnecessary GC pressure that can cause micro-stutters during high-speed AR tracking.
+**Action:** Always iterate `ImageData` row-major (y outer loop, x inner loop), precalculate loop bounds to avoid per-pixel conditionals, and hoist or inline array/object allocations out of high-frequency render loops.
