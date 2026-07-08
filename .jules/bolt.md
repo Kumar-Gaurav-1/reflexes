@@ -1,0 +1,3 @@
+## 2025-03-04 - AR Kinetic Loop GC Pressure
+**Learning:** Found a critical performance bottleneck in `src/components/ar-drill-view.tsx` where array allocations (`[{x: 5, y: 5}, ...]`) and closures (`.forEach`) were occurring inside `detectMotion` - a hot path running 60 times per second via `requestAnimationFrame`. This codebase-specific pattern causes significant garbage collection pressure, leading to micro-stutters during high-intensity AR sessions.
+**Action:** Always extract static array configurations and avoid closures/allocations inside `requestAnimationFrame` hooks, especially in the Canvas API/motion detection paths. Pre-compute memory indices where possible.
