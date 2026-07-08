@@ -14,6 +14,15 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// ⚡ Bolt Performance: Pre-computed memory indices for corner sampling (x, y) coordinates on a 160x120 canvas
+// Formula: (y * width + x) * 4 to prevent recalculations and array allocations in 60fps loop
+const CORNER_PIXEL_INDICES = [
+  (5 * 160 + 5) * 4,     // Top-Left (x: 5, y: 5)
+  (5 * 160 + 155) * 4,   // Top-Right (x: 155, y: 5)
+  (115 * 160 + 5) * 4,   // Bottom-Left (x: 5, y: 115)
+  (115 * 160 + 155) * 4  // Bottom-Right (x: 155, y: 115)
+]
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -204,12 +213,12 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const prevData = prevFrameRef.current.data
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
+      // ⚡ Bolt Performance: Using pre-computed flat indices and a standard for loop to avoid GC churn in RAF loop
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < CORNER_PIXEL_INDICES.length; i++) {
+        const pos = CORNER_PIXEL_INDICES[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
