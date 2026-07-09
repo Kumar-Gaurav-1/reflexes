@@ -55,6 +55,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
 
   // Kinetic Neural Engine Refs
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
   const prevFrameRef = useRef<ImageData | null>(null)
   const processingRef = useRef<boolean>(false)
 
@@ -193,7 +194,11 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       return
     }
 
-    const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true })
+    // ⚡ Bolt Optimization: Memoize the 2D context to prevent repeated DOM lookups per frame
+    if (!ctxRef.current) {
+      ctxRef.current = canvasRef.current.getContext('2d', { willReadFrequently: true })
+    }
+    const ctx = ctxRef.current
     if (!ctx) return
 
     ctx.drawImage(videoRef.current, 0, 0, 160, 120)
@@ -224,11 +229,19 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // ⚡ Bolt Optimization: Pre-calculate bounds to eliminate conditionals in the inner loop
+          // This prevents branch prediction misses in the hot path running 60fps
+          const minX = Math.max(0, canvasX - searchRadius)
+          const maxX = Math.min(160, canvasX + searchRadius)
+          const minY = Math.max(0, canvasY - searchRadius)
+          const maxY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          for (let y = minY; y < maxY; y++) {
+            // ⚡ Bolt Optimization: Cache row offset to replace per-pixel multiplication with addition
+            const rowOffset = y * 160
+            for (let x = minX; x < maxX; x++) {
+              const pos = (rowOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
