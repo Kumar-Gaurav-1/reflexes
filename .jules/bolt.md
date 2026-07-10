@@ -1,0 +1,3 @@
+## 2024-03-24 - ImageData Loop Traversal
+**Learning:** The kinetic motion detection loop (`detectMotion` in `ar-drill-view.tsx`) was running on every animation frame and traversing `ImageData` arrays (160x120 pixels) using column-major order (X outer loop, Y inner loop) and checking bounds inside the inner loop. In JavaScript, arrays representing pixels are row-major, so this caused poor CPU cache locality, and the bounds check added unnecessary branch evaluation.
+**Action:** Always traverse 1D pixel arrays using row-major order (Y outer loop, X inner loop) and hoist array bounds calculations outside of hot loops that run on `requestAnimationFrame`.
