@@ -16,6 +16,15 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
+// Pre-calculated byte positions for corner sampling in a 160x120 RGBA image buffer.
+// Avoids recreating arrays/objects and calculating positions in the animation loop.
+const CORNER_POSITIONS = [
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4,
+]
+
 interface ARDrillViewProps {
   sport: string
   drillName: string
@@ -205,11 +214,10 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < CORNER_POSITIONS.length; i++) {
+        const pos = CORNER_POSITIONS[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
