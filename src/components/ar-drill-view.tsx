@@ -32,6 +32,15 @@ interface Target {
   type?: 'ball' | 'neutral'
 }
 
+// Pre-calculate corner sample positions for 160x120 canvas to avoid array/object allocation in render loop
+// Formula: (y * 160 + x) * 4
+const CORNER_SAMPLE_POSITIONS = [
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4
+];
+
 export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) {
   const { user } = useUser()
   const db = useFirestore()
@@ -205,16 +214,20 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+
+      // ⚡ Bolt Optimization: Use pre-calculated array and standard for loop
+      // to avoid dynamic allocations and closures that cause GC pauses in requestAnimationFrame
+      for (let i = 0; i < CORNER_SAMPLE_POSITIONS.length; i++) {
+        const pos = CORNER_SAMPLE_POSITIONS[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
         const activeTargets = targetsRef.current
-        activeTargets.forEach(target => {
+        // ⚡ Bolt Optimization: Use standard for loop over activeTargets to avoid .forEach closure allocation
+        for (let i = 0; i < activeTargets.length; i++) {
+          const target = activeTargets[i]
           // Mirror correction for coordinates
           const rawFrameXPercent = 100 - target.x
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
@@ -244,7 +257,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           if (motionSnapCount > 4 && motionDensity > 6 && motionDensity < 40) {
             handleHitRef.current?.(target.id, target.x, target.y)
           }
-        })
+        }
       }
     }
 

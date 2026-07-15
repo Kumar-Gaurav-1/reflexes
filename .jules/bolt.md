@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid Garbage Collection Pauses in AR Canvas Render Loops
+**Learning:** Dynamic array/object allocations (like inline arrays `[{x: 5, y: 5}, ...]`) and functional iterators (like `.forEach`) inside high-frequency functions (e.g., `requestAnimationFrame`) generate significant garbage on every frame. In this AR sports application, which uses canvas rendering and pixel comparison, these allocations lead to garbage collection pauses that stutter the tracking.
+**Action:** Always pre-calculate constant values outside of the render loop (e.g., pre-computing pixel indices) and use standard `for` loops instead of `.forEach` closures to avoid per-frame allocations and ensure smooth kinetic tracking.
