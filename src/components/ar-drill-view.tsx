@@ -110,7 +110,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       setTimeout(() => {
         setPreCue(p => ({ ...p, active: false }))
-        const ballId = Math.random().toString(36).substring(2, 9)
+        const ballId = crypto.randomUUID()
         const endX = Math.random() * 60 + 20
         const endY = Math.random() * 50 + 25
         
@@ -140,7 +140,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       }, 300)
     } else {
       const newTarget: Target = {
-        id: Math.random().toString(36).substring(2, 9),
+        id: crypto.randomUUID(),
         x: Math.random() * 60 + 20, 
         y: Math.random() * 50 + 25,
         z: 1,
