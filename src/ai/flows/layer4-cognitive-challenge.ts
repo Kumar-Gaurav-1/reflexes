@@ -54,58 +54,104 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&uuml;/g, 'ü');
 }
 
+// Caches for API responses to reduce network calls and improve performance
+const triviaCache: Layer4CognitiveChallengeOutput[] = [];
+const jokeCache: Layer4CognitiveChallengeOutput[] = [];
+const factCache: Layer4CognitiveChallengeOutput[] = [];
+
 // Helper function to fetch a trivia question from Open Trivia DB
 async function fetchTriviaQuestion(): Promise<Layer4CognitiveChallengeOutput> {
-  const response = await fetch('https://opentdb.com/api.php?amount=1&type=multiple');
+  if (triviaCache.length > 0) {
+    return triviaCache.pop()!;
+  }
+
+  // Fetch a batch of questions to avoid rate limits and speed up subsequent calls
+  const response = await fetch('https://opentdb.com/api.php?amount=50&type=multiple');
   if (!response.ok) {
     throw new Error(`Failed to fetch trivia: ${response.statusText}`);
   }
   const data = await response.json();
+
   if (data.results && data.results.length > 0) {
-    const trivia = data.results[0];
-    const question = decodeHtmlEntities(trivia.question);
-    const answer = decodeHtmlEntities(trivia.correct_answer);
-    const choices = [trivia.correct_answer, ...trivia.incorrect_answers]
-      .map(decodeHtmlEntities)
-      .sort(() => Math.random() - 0.5); // Shuffle choices
-    return {
-      type: 'trivia',
-      question: question,
-      content: `${question}\nChoices: ${choices.join(', ')}`,
-      answer: answer,
-    };
+    const formattedQuestions = data.results.map((trivia: any) => {
+      const question = decodeHtmlEntities(trivia.question);
+      const answer = decodeHtmlEntities(trivia.correct_answer);
+      const choices = [trivia.correct_answer, ...trivia.incorrect_answers]
+        .map(decodeHtmlEntities)
+        .sort(() => Math.random() - 0.5); // Shuffle choices
+
+      return {
+        type: 'trivia',
+        question: question,
+        content: `${question}\nChoices: ${choices.join(', ')}`,
+        answer: answer,
+      };
+    });
+
+    // Populate cache with all but the first question
+    triviaCache.push(...formattedQuestions.slice(1));
+    return formattedQuestions[0];
   }
   throw new Error('No trivia question found.');
 }
 
 // Helper function to fetch a random fact
 async function fetchRandomFact(): Promise<Layer4CognitiveChallengeOutput> {
-  const response = await fetch('https://uselessfacts.jsph.pl/random.json?language=en');
-  if (!response.ok) {
-    throw new Error(`Failed to fetch fact: ${response.statusText}`);
+  if (factCache.length > 0) {
+    return factCache.pop()!;
   }
-  const data = await response.json();
-  if (data.text) {
-    return {
+
+  // Fetch a batch of facts concurrently to avoid 301 redirects and speed up subsequent calls
+  // The API doesn't support the amount parameter as expected on this endpoint, so we fire 5 concurrent requests
+  const requests = Array(5).fill(0).map(() =>
+    fetch('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en').then(res => {
+      if (!res.ok) throw new Error(`Failed to fetch fact: ${res.statusText}`);
+      return res.json();
+    })
+  );
+
+  const results = await Promise.all(requests);
+  const formattedFacts = results
+    .filter((data: any) => data && data.text)
+    .map((data: any) => ({
       type: 'fact',
       content: data.text,
-    };
+    }));
+
+  if (formattedFacts.length > 0) {
+    factCache.push(...formattedFacts.slice(1));
+    return formattedFacts[0];
   }
+
   throw new Error('No random fact found.');
 }
 
 // Helper function to fetch a random joke
 async function fetchRandomJoke(): Promise<Layer4CognitiveChallengeOutput> {
-  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=racist,sexist,explicit&type=single');
+  if (jokeCache.length > 0) {
+    return jokeCache.pop()!;
+  }
+
+  // Fetch a batch of jokes to speed up subsequent calls
+  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=racist,sexist,explicit&type=single&amount=10');
   if (!response.ok) {
     throw new Error(`Failed to fetch joke: ${response.statusText}`);
   }
   const data = await response.json();
-  if (data.joke) {
-    return {
+
+  if (data.jokes && data.jokes.length > 0) {
+    const formattedJokes = data.jokes.map((jokeData: any) => ({
       type: 'joke',
-      content: data.joke,
-    };
+      content: jokeData.joke,
+    }));
+
+    jokeCache.push(...formattedJokes.slice(1));
+    return formattedJokes[0];
+  } else if (data.joke) {
+     return {
+         type: 'joke',
+         content: data.joke
+     }
   }
   throw new Error('No random joke found.');
 }
