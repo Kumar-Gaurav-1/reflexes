@@ -87,7 +87,7 @@ const dynamicAdaptiveDrillsFlow = ai.defineFlow(
       const { output } = await prompt(input);
       if (!output) throw new Error("No output generated from AI");
       return output;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Sovereign Baseline Protocol: Robust fallback for 429 quota errors
       console.warn("Genkit AI limit reached. Reverting to Sovereign Baseline Protocol.");
       
