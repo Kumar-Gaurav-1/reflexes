@@ -11,6 +11,18 @@ import { cn } from "@/lib/utils"
 import { useUser, useFirestore } from "@/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { errorEmitter } from '@/firebase/error-emitter'
+
+// Pre-calculate byte offsets for a 16x16 search window (radius 8)
+// to avoid inner loop boundary checks and index math during requestAnimationFrame
+const SEARCH_RADIUS = 8;
+const MOTION_OFFSETS = new Int32Array(SEARCH_RADIUS * 2 * SEARCH_RADIUS * 2);
+let idx = 0;
+for (let dy = -SEARCH_RADIUS; dy < SEARCH_RADIUS; dy++) {
+  for (let dx = -SEARCH_RADIUS; dx < SEARCH_RADIUS; dx++) {
+    MOTION_OFFSETS[idx++] = (dy * 160 + dx) * 4;
+  }
+}
+
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
@@ -225,17 +237,42 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          const isSafe = canvasX >= searchRadius && canvasX < 160 - searchRadius &&
+                         canvasY >= searchRadius && canvasY < 120 - searchRadius
+
+          if (isSafe) {
+            // Optimized path: entirely within bounds
+            const centerPos = (canvasY * 160 + canvasX) * 4
+            for (let j = 0; j < MOTION_OFFSETS.length; j++) {
+              const pos = centerPos + MOTION_OFFSETS[j]
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
               
               if (diff > 180) { // High intensity change
                 motionDensity++
-                if (diff > 220) motionSnapCount++ 
+                if (diff > 220) motionSnapCount++
+              }
+            }
+          } else {
+            // Slower path: handle edge boundaries safely without inner loop branching
+            const startX = Math.max(0, canvasX - searchRadius)
+            const endX = Math.min(160, canvasX + searchRadius)
+            const startY = Math.max(0, canvasY - searchRadius)
+            const endY = Math.min(120, canvasY + searchRadius)
+
+            for (let y = startY; y < endY; y++) {
+              const rowOffset = y * 160
+              for (let x = startX; x < endX; x++) {
+                const pos = (rowOffset + x) * 4
+                const diff = Math.abs(data[pos] - prevData[pos]) +
+                             Math.abs(data[pos+1] - prevData[pos+1]) +
+                             Math.abs(data[pos+2] - prevData[pos+2])
+
+                if (diff > 180) { // High intensity change
+                  motionDensity++
+                  if (diff > 220) motionSnapCount++
+                }
               }
             }
           }
