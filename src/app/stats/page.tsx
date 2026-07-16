@@ -59,6 +59,10 @@ export default function StatsPage() {
     return Math.round(((first - last) / (first || 1)) * 100)
   }, [sessions])
 
+  const aggregateScore = useMemo(() => {
+    return sessions.reduce((acc, s) => acc + s.score, 0)
+  }, [sessions])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -158,8 +162,8 @@ export default function StatsPage() {
               <MetricSummaryCard 
                 icon={<Target className="text-accent" />} 
                 label="Aggregate Score" 
-                value={sessions.reduce((acc, s) => acc + s.score, 0).toLocaleString()} 
-                trend={`Avg: ${Math.round(sessions.reduce((acc, s) => acc + s.score, 0) / (sessions.length || 1))}`}
+                value={aggregateScore.toLocaleString()}
+                trend={`Avg: ${Math.round(aggregateScore / (sessions.length || 1))}`}
                 color="text-accent"
               />
               <MetricSummaryCard 
