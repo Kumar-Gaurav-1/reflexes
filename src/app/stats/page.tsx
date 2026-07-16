@@ -32,9 +32,11 @@ export default function StatsPage() {
 
   const sessions = useMemo(() => {
     if (!rawSessions || rawSessions.length === 0) return []
-    return [...rawSessions].reverse().map((s: any) => {
+    const result = new Array(rawSessions.length);
+    for (let i = rawSessions.length - 1, j = 0; i >= 0; i--, j++) {
+      const s = rawSessions[i] as any;
       const date = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : new Date()
-      return {
+      result[j] = {
         id: s.id,
         day: date.toLocaleDateString(undefined, { weekday: 'short' }),
         fullDate: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -44,7 +46,8 @@ export default function StatsPage() {
         sport: s.sport || 'Unknown',
         drill: s.drillName || 'Standard Protocol'
       }
-    })
+    }
+    return result;
   }, [rawSessions])
 
   const avgRt = useMemo(() => {
