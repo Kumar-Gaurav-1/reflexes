@@ -126,16 +126,9 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
         
         setTargets(prev => [...prev, newTarget])
 
-        let depth = 0.1
-        const animInterval = setInterval(() => {
-          depth += 0.05
-          if (depth >= 1) {
-            clearInterval(animInterval)
-            setTargets(prev => prev.filter(t => t.id !== ballId))
-          } else {
-            setTargets(prev => prev.map(t => t.id === ballId ? { ...t, z: depth } : t))
-          }
-        }, 30)
+        setTimeout(() => {
+          setTargets(prev => prev.filter(t => t.id !== ballId))
+        }, 540) // 18 intervals * 30ms = 540ms
 
       }, 300)
     } else {
@@ -378,12 +371,12 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           {status === 'active' && targets.map(t => (
             <div
               key={t.id}
-              className="absolute w-32 h-32 -ml-16 -mt-16 rounded-full glass-pro flex items-center justify-center transition-all animate-pulse-ring"
+              className={cn("absolute w-32 h-32 -ml-16 -mt-16 rounded-full glass-pro flex items-center justify-center transition-all animate-pulse-ring", t.type === 'ball' ? "animate-ball-throw" : "")}
               style={{ 
                 left: `${t.x}%`, 
                 top: `${t.y}%`,
-                transform: `scale(${t.z})`,
-                opacity: t.z
+                transform: t.type === 'ball' ? undefined : `scale(${t.z})`,
+                opacity: t.type === 'ball' ? undefined : t.z
               }}
             >
               <div 
