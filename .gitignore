@@ -44,4 +44,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # Misc
-*.pem
+*.pemcoverage/
