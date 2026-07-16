@@ -17,6 +17,21 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  unit: string;
+  trend?: string;
+}
+
+interface CategoryCardProps {
+  title: string;
+  sport: string;
+  drills: string;
+  imgId: string;
+}
+
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
   const auth = useAuth()
@@ -169,7 +184,7 @@ export default function DashboardPage() {
   )
 }
 
-function StatCard({ icon, label, value, unit, trend }: any) {
+function StatCard({ icon, label, value, unit, trend }: StatCardProps) {
   return (
     <Card className="p-8 border-none bg-white rounded-[2.5rem] shadow-sm flex flex-col gap-6 transition-all hover:shadow-md hover:-translate-y-1">
       <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center">
@@ -194,7 +209,7 @@ function StatCard({ icon, label, value, unit, trend }: any) {
   )
 }
 
-function CategoryCard({ title, sport, drills, imgId }: any) {
+function CategoryCard({ title, sport, drills, imgId }: CategoryCardProps) {
   const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
   const img = getImg(imgId)
 
