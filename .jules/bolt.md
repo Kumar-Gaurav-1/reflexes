@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid Dynamic Allocations in requestAnimationFrame
+**Learning:** Dynamic object/array allocations (like creating `{x, y}` objects) and closure creation via `.forEach()` within a high-frequency `requestAnimationFrame` loop cause unnecessary memory churn. This leads to frequent garbage collection (GC) pauses, which manifest as stutters or jank in the AR kinetic tracking experience.
+**Action:** Pre-calculate constant values (such as pixel indices for motion sampling) at the module level, outside of the React component. Use standard `for` loops instead of `.forEach()` or `.map()` inside the render loop to completely avoid allocating closures and arrays during high-frequency execution paths.

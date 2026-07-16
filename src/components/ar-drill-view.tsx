@@ -14,6 +14,12 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// Bolt Optimization: Pre-calculate constant values at the module level to avoid
+// object creation on every animation frame, preventing GC stutters.
+const CORNER_SAMPLES = [
+  {x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}
+].map(p => (p.y * 160 + p.x) * 4);
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -205,16 +211,19 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      // Bolt Optimization: Use pre-calculated array and standard for loop to avoid
+      // closure/array allocation on every frame, reducing memory churn and GC pauses.
+      for (let i = 0; i < CORNER_SAMPLES.length; i++) {
+        const pos = CORNER_SAMPLES[i];
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
         const activeTargets = targetsRef.current
-        activeTargets.forEach(target => {
+        // Bolt Optimization: Use standard for loop instead of .forEach to prevent closure creation
+        for (let i = 0; i < activeTargets.length; i++) {
+          const target = activeTargets[i];
           // Mirror correction for coordinates
           const rawFrameXPercent = 100 - target.x
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
@@ -244,7 +253,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           if (motionSnapCount > 4 && motionDensity > 6 && motionDensity < 40) {
             handleHitRef.current?.(target.id, target.x, target.y)
           }
-        })
+        }
       }
     }
 
