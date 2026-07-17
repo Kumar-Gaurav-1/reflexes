@@ -32,6 +32,16 @@ interface Target {
   type?: 'ball' | 'neutral'
 }
 
+// Pre-calculated 1D array indices for motion detection corner sampling.
+// Corner positions (x,y): (5,5), (155,5), (5,115), (155,115) mapped to 1D flat array with 4 channels per pixel (RGBA)
+// Image dimensions: 160x120
+const CORNER_INDICES = new Int32Array([
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4
+]);
+
 export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) {
   const { user } = useUser()
   const db = useFirestore()
@@ -205,11 +215,10 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < CORNER_INDICES.length; i++) {
+        const pos = CORNER_INDICES[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
