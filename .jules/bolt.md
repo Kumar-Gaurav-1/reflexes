@@ -1,0 +1,3 @@
+## 2026-07-19 - Pre-calculating Frame Offsets in Canvas Loop
+**Learning:** In highly frequent `requestAnimationFrame` and canvas pixel array processing loops, dynamic object allocations (`[{x, y}]`) and array iteration (`forEach`) cause massive garbage collection stutter and slow execution. Furthermore, placing conditional bounds checks inside a nested pixel processing loop kills performance.
+**Action:** Always pre-calculate pixel offsets into typed arrays (`Int32Array`) at the module level. Use standard `for` loops. Clamp array boundaries (`Math.max`, `Math.min`) *before* entering nested pixel loops to remove inner conditionals.
