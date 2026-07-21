@@ -14,6 +14,15 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// Performance Optimization: Pre-allocate static constants outside the render loop
+// Using Int32Array avoids dynamic array/object allocations and speeds up coordinate access
+const CORNER_POSITIONS = new Int32Array([
+  5, 5,   // x, y
+  155, 5,
+  5, 115,
+  155, 115
+]);
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -205,11 +214,14 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      // Performance Optimization: Iterate over pre-allocated Int32Array with standard for-loop
+      // This prevents allocating the cornerSamples object array and closures on every frame
+      for (let i = 0; i < CORNER_POSITIONS.length; i += 2) {
+        const cx = CORNER_POSITIONS[i];
+        const cy = CORNER_POSITIONS[i + 1];
+        const pos = (cy * 160 + cx) * 4
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -224,10 +236,15 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // Performance Optimization: Pre-clamp boundaries to avoid if-checks inside nested loop
+          const startX = Math.max(0, canvasX - searchRadius);
+          const endX = Math.min(160, canvasX + searchRadius);
+          const startY = Math.max(0, canvasY - searchRadius);
+          const endY = Math.min(120, canvasY + searchRadius);
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          for (let x = startX; x < endX; x++) {
+            for (let y = startY; y < endY; y++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 

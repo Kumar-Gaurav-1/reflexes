@@ -1,0 +1,3 @@
+## 2025-02-22 - Optimizing Canvas Nested Loops in AR Drill View
+**Learning:** Extracting inline object array definitions to module-level `Int32Array` buffers and pre-clamping dynamic iteration bounds out of hot pixel-processing nested `for` loops substantially reduces closure and GC overhead, speeding up per-frame processing.
+**Action:** When working on `requestAnimationFrame` canvas logic in this repository, always pre-allocate fixed structure data as module-level constants (e.g. TypedArrays) and move `Math.min`/`Math.max` boundary checks outside nested iteration scopes to prevent expensive per-pixel branch checking.
