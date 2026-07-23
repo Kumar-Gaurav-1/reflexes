@@ -14,6 +14,15 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// Pre-calculated 1D byte indices for corner sampling: (y * 160 + x) * 4
+// Corners: (5,5), (155,5), (5,115), (155,115)
+const CORNER_POSITIONS = new Int32Array([
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4
+]);
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -205,11 +214,10 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < CORNER_POSITIONS.length; i++) {
+        const pos = CORNER_POSITIONS[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -224,11 +232,18 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // Pre-calculate clamped bounds to avoid inner loop conditionals
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // Loop order swapped (y then x) for better cache spatial locality
+          for (let y = startY; y < endY; y++) {
+            const yOffset = y * 160
+            for (let x = startX; x < endX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
