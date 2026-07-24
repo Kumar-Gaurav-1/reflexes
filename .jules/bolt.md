@@ -1,0 +1,3 @@
+## 2024-07-24 - Typed Arrays & Loop Boundaries for Kinetic Motion Engine
+**Learning:** High-frequency rendering loops (like `requestAnimationFrame` running 60fps) are extremely sensitive to Garbage Collection stutters when allocating anonymous objects (e.g. `[{x: 5, y: 5}, ...]`) and using array iterators (`forEach`). Furthermore, executing standard boundary checks (`if (x < 0 || ...) continue`) inside nested image processing loops incurs high branch misprediction overhead.
+**Action:** Extract constant numerical sequences into module-level typed arrays (`Int32Array`) and use standard `for` loops. Pre-clamp array lookup boundaries using `Math.max` and `Math.min` before entering nested loops.
