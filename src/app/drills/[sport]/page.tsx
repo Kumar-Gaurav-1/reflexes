@@ -67,7 +67,7 @@ export default function SportDrillPage() {
           <ARDrillView 
             sport={sport as string} 
             drillName={drillConfig.drillName} 
-            onComplete={(score) => console.log('Drill complete with score:', score)}
+            onComplete={() => {}}
           />
         </main>
       </div>
