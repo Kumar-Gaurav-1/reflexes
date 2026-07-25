@@ -1,0 +1,11 @@
+🎯 **What:**
+Added unit tests for the `cn` utility function (`src/lib/utils.ts`) which merges Tailwind classes and resolves conflicts.
+
+📊 **Coverage:**
+- Basic class string merging
+- Tailwind class conflict resolution (via `twMerge`)
+- Conditional classes via objects and arrays (via `clsx`)
+- Ignoring falsy values (`null`, `undefined`, `false`, `0`, `''`)
+
+✨ **Result:**
+Increased test coverage and confidence for our core styling utility, ensuring no regressions when handling dynamic Tailwind classes in the future.
