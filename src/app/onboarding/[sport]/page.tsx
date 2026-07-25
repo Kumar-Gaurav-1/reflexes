@@ -4,7 +4,7 @@
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ShieldCheck, Maximize, Target, ChevronRight, Zap } from "lucide-react"
+import { ShieldCheck, Maximize, Target, ChevronRight } from "lucide-react"
 
 export default function OnboardingSetupPage() {
   const { sport } = useParams()
