@@ -1,0 +1,7 @@
+**What:** Removed the unused `Zap` icon import from `src/app/onboarding/[sport]/page.tsx`.
+
+**Why:** Removing dead code and unused imports keeps the file cleaner, reduces potential confusion for developers, and slightly decreases the module's initialization cost and bundle size.
+
+**Verification:** Ran `npm run typecheck` and `npm run build` which compiled successfully without errors, confirming that `Zap` was truly unused. Verified `lucide-react` import works normally.
+
+**Result:** Improved code cleanliness and maintainability by removing a dead dependency from the onboarding setup page.
