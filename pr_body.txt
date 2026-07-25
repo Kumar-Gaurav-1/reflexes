@@ -1,0 +1,4 @@
+🎯 **What:** Removed the unused `BrainCircuit` import from `lucide-react` in `src/app/dashboard/page.tsx`.
+💡 **Why:** To improve code health and maintainability by cleaning up unused dependencies, making the code cleaner and less confusing.
+✅ **Verification:** Verified that the code compiles successfully (`npm run typecheck` and `npm run build`) without any errors.
+✨ **Result:** A cleaner import statement with no unused symbols, maintaining all existing functionality without side-effects.
