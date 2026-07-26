@@ -1,0 +1,3 @@
+## 2024-03-24 - AR Rendering Loop Optimization
+**Learning:** In Next.js/React applications with high-frequency AR processing loops (like requestAnimationFrame), creating objects dynamically (like `[{x: 5, y: 5}, ...]`) and using array iteration methods (`forEach`) on every frame causes significant GC pressure and performance stutter. Similarly, bounds checking inside nested pixel iteration loops adds measurable overhead.
+**Action:** Extract pre-calculated constant offsets to module-level TypedArrays (e.g., `Int32Array`) and use standard `for` loops. Clamp boundaries outside nested array loops (`Math.max` / `Math.min`) to remove inner-loop conditional checks.
