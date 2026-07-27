@@ -14,6 +14,14 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// Pre-calculated byte offsets for corner samples in 160x120 RGBA buffer
+const CORNER_OFFSETS = new Int32Array([
+  (5 * 160 + 5) * 4,     // Top-left
+  (5 * 160 + 155) * 4,   // Top-right
+  (115 * 160 + 5) * 4,   // Bottom-left
+  (115 * 160 + 155) * 4  // Bottom-right
+]);
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -205,11 +213,10 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < CORNER_OFFSETS.length; i++) {
+        const pos = CORNER_OFFSETS[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -225,9 +232,13 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          const minX = Math.max(0, canvasX - searchRadius)
+          const maxX = Math.min(160, canvasX + searchRadius)
+          const minY = Math.max(0, canvasY - searchRadius)
+          const maxY = Math.min(120, canvasY + searchRadius)
+
+          for (let x = minX; x < maxX; x++) {
+            for (let y = minY; y < maxY; y++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
