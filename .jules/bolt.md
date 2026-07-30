@@ -1,0 +1,3 @@
+## 2024-05-24 - Canvas AR Loop Optimization
+**Learning:** Pre-calculating array positions and clamping loop boundaries for image processing inside a `requestAnimationFrame` significantly reduces GC overhead and eliminates branch prediction hits in nested hot loops. Additionally, aligning nested loops with the memory layout of the 1D pixel array (row-major access by making `y` the outer loop and `x` the inner loop) improves CPU cache locality.
+**Action:** Always structure nested pixel processing loops with `y` as the outer loop and `x` as the inner loop. Hoist constant values, array boundaries, and avoid object allocation inside high-frequency rendering loops.
