@@ -16,6 +16,9 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
+// Static array for corner samples to prevent garbage collection on every frame
+const CORNER_SAMPLES = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
+
 interface ARDrillViewProps {
   sport: string
   drillName: string
@@ -205,8 +208,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
+      CORNER_SAMPLES.forEach(p => {
         const pos = (p.y * 160 + p.x) * 4
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
       })
@@ -224,11 +226,18 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // Pre-clamp boundaries to avoid inner-loop conditionals
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // Y is outer loop, X is inner loop for contiguous row-major memory access
+          for (let y = startY; y < endY; y++) {
+            const yOffset = y * 160
+            for (let x = startX; x < endX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
