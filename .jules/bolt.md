@@ -1,0 +1,3 @@
+## 2024-05-24 - AR Rendering Loop Optimization
+**Learning:** Nested loops processing pixel arrays on every frame in AR environments suffer from cache misses if iterating in column-major order (x outer, y inner) instead of row-major order (y outer, x inner). Also, dynamic array allocations like `const cornerSamples = [...]` inside `requestAnimationFrame` handlers cause garbage collection stutter.
+**Action:** Always extract static configuration arrays to module-level constants and swap loop orders to respect row-major memory layout (y outer, x inner) for pixel processing, while pre-clamping boundaries to avoid per-pixel conditionals.
