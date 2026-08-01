@@ -14,6 +14,14 @@ import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
+// Pre-calculate corner offsets for 160x120 canvas to avoid recreation in render loop
+const CORNER_OFFSETS = new Int32Array([
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4
+])
+
 type DrillStatus = 'idle' | 'countdown' | 'active' | 'finished'
 
 interface ARDrillViewProps {
@@ -205,11 +213,10 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      for (let i = 0; i < 4; i++) {
+        const pos = CORNER_OFFSETS[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -225,10 +232,17 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // Calculate loop bounds outside inner loop
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+
+          // Loop with y on the outside, x on the inside to utilize continuous memory access
+          for (let y = startY; y < endY; y++) {
+            const yOffset = y * 160
+            for (let x = startX; x < endX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
