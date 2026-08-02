@@ -1,0 +1,3 @@
+## 2026-08-02 - [AR/Canvas Loop Optimization]
+**Learning:** [Pixel processing loops in AR contexts can suffer from significant overhead due to dynamic allocations (e.g., array creation on every frame), non-contiguous memory access (x-first vs y-first loop nesting), and conditional bounds checks running inside inner loops on every iteration.]
+**Action:** [Pre-calculate static constants and array offsets outside component lifecycle, swap nested loops to ensure y-outer and x-inner for row-major cache locality, and clamp boundaries using Math.max/min before entering nested loops to eliminate per-iteration conditional checks.]
