@@ -8,3 +8,7 @@ export type ImagePlaceholder = {
 };
 
 export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
+
+export const PlaceHolderImageMap: Record<string, ImagePlaceholder> = Object.fromEntries(
+  PlaceHolderImages.map(img => [img.id, img])
+);
