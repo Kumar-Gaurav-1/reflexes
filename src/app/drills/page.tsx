@@ -10,6 +10,8 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 
+const imageMap = new Map(PlaceHolderImages.map(img => [img.id, img]))
+
 const categories = [
   { id: 'all', label: 'All Domains' },
   { id: 'precision', label: 'Precision' },
@@ -57,7 +59,7 @@ const sports = [
 ]
 
 export default function TrainingHubPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => imageMap.get(id)
 
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-0">
