@@ -20,8 +20,10 @@ const sports = [
   { id: "general", title: "General Reflexes", who: "All Athletes", trains: "Neural Baseline", improvement: "25ms", imgId: "circuit-main", layer: "Foundation" },
 ]
 
+const imageMap = new Map(PlaceHolderImages.map(img => [img.id, img]))
+
 export default function LandingPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => imageMap.get(id)
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
