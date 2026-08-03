@@ -32,6 +32,15 @@ interface Target {
   type?: 'ball' | 'neutral'
 }
 
+// Pre-calculate corner sample indices for 160x120 canvas to avoid recalculating every frame
+// Format: [(y * 160 + x) * 4, ...]
+const CORNER_SAMPLE_INDICES = new Int32Array([
+  (5 * 160 + 5) * 4,
+  (5 * 160 + 155) * 4,
+  (115 * 160 + 5) * 4,
+  (115 * 160 + 155) * 4
+]);
+
 export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) {
   const { user } = useUser()
   const db = useFirestore()
@@ -205,11 +214,11 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
+      // Use pre-calculated indices in Int32Array to avoid object allocation and math on every frame
+      for (let i = 0; i < CORNER_SAMPLE_INDICES.length; i++) {
+        const pos = CORNER_SAMPLE_INDICES[i]
         globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      }
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -225,10 +234,18 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+
+          // Clamp boundaries outside the loops to avoid checking on every iteration
+          const minX = Math.max(0, canvasX - searchRadius)
+          const maxX = Math.min(160, canvasX + searchRadius)
+          const minY = Math.max(0, canvasY - searchRadius)
+          const maxY = Math.min(120, canvasY + searchRadius)
+
+          // Iterate y as outer loop to optimize cache locality (row-major memory access)
+          for (let y = minY; y < maxY; y++) {
+            const rowOffset = y * 160
+            for (let x = minX; x < maxX; x++) {
+              const pos = (rowOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])

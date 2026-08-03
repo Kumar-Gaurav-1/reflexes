@@ -1,0 +1,3 @@
+## 2024-05-24 - Canvas Pixel Loop Optimizations
+**Learning:** High-frequency rendering loops (e.g. requestAnimationFrame checking pixel diffs) are sensitive to object allocation, array bounding checks on each loop iteration, and non-contiguous memory access. Modifying outer loops to correspond to rows (`y`) and inner loops to columns (`x`) significantly improves CPU cache hit rates for row-major image data like `ImageData.data`.
+**Action:** When writing or optimizing pixel traversal loops in AR or Canvas apps, clamp boundary checks before entering the loop, use pre-calculated typed arrays (`Int32Array`) for static sample points to prevent per-frame object allocation, and prioritize row-major loop iteration (y first, then x).
