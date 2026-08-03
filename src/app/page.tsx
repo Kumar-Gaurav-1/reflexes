@@ -20,8 +20,13 @@ const sports = [
   { id: "general", title: "General Reflexes", who: "All Athletes", trains: "Neural Baseline", improvement: "25ms", imgId: "circuit-main", layer: "Foundation" },
 ]
 
+const imageMap = PlaceHolderImages.reduce((acc, img) => {
+  acc[img.id] = img;
+  return acc;
+}, {} as Record<string, typeof PlaceHolderImages[number]>);
+
 export default function LandingPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => imageMap[id];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
