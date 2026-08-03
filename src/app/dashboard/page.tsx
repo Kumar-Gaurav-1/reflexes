@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { useUser, useDoc, useAuth, useFirestore } from "@/firebase"
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { PlaceHolderImageMap } from "@/lib/placeholder-images"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     }
   }
 
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => PlaceHolderImageMap[id]
 
   if (userLoading) return null
 
@@ -195,7 +195,7 @@ function StatCard({ icon, label, value, unit, trend }: any) {
 }
 
 function CategoryCard({ title, sport, drills, imgId }: any) {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => PlaceHolderImageMap[id]
   const img = getImg(imgId)
 
   return (
