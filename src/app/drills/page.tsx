@@ -56,8 +56,10 @@ const sports = [
   }
 ]
 
+const placeHolderImagesMap = new Map(PlaceHolderImages.map(img => [img.id, img]))
+
 export default function TrainingHubPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => placeHolderImagesMap.get(id)
 
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-0">
