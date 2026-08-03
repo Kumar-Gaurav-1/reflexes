@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { FirebaseApp } from 'firebase/app';
+import { Firestore } from 'firebase/firestore';
+import { Auth } from 'firebase/auth';
 import { initializeFirebase } from './index';
 import { FirebaseProvider } from './provider';
 
@@ -11,9 +14,9 @@ export function FirebaseClientProvider({
 }) {
   // Use state to hold the initialized instances, ensuring they only exist on the client
   const [instances, setInstances] = useState<{
-    app: any;
-    db: any;
-    auth: any;
+    app: FirebaseApp | null;
+    db: Firestore | null;
+    auth: Auth | null;
   } | null>(null);
 
   useEffect(() => {
