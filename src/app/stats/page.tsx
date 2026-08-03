@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useUser, useFirestore, useCollection } from "@/firebase"
 import { collection, query, where, orderBy, limit } from "firebase/firestore"
-import { useMemo } from "react"
+import { useMemo, ReactNode } from "react"
 import Link from "next/link"
 
 export default function StatsPage() {
@@ -249,7 +249,15 @@ export default function StatsPage() {
   )
 }
 
-function MetricSummaryCard({ icon, label, value, trend, color }: any) {
+interface MetricSummaryCardProps {
+  icon: ReactNode;
+  label: string;
+  value: string | number;
+  trend: string;
+  color: string;
+}
+
+function MetricSummaryCard({ icon, label, value, trend, color }: MetricSummaryCardProps) {
   return (
     <Card className="p-10 border-none bg-white rounded-[3rem] shadow-sm space-y-4 hover:shadow-md transition-all duration-500 group">
       <div className="flex items-center gap-4">
