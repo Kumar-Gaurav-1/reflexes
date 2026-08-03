@@ -1,7 +1,7 @@
 'use client';
 
 export const firebaseConfig = {
-  apiKey: "AIzaSy...", // Placeholder - actual values provided by the Firebase console
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "", // Provided via environment variable
   authDomain: "reflexes-ar.firebaseapp.com",
   projectId: "reflexes-ar",
   storageBucket: "reflexes-ar.appspot.com",
