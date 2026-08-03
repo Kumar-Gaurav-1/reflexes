@@ -8,7 +8,7 @@ import { Search, SlidersHorizontal, ChevronRight, Zap, BrainCircuit } from "luci
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { PlaceHolderImages, PlaceHolderImagesMap } from "@/lib/placeholder-images"
 
 const categories = [
   { id: 'all', label: 'All Domains' },
@@ -57,7 +57,7 @@ const sports = [
 ]
 
 export default function TrainingHubPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+  const getImg = (id: string) => PlaceHolderImagesMap[id]
 
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-0">
