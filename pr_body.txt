@@ -1,0 +1,3 @@
+🎯 **What:** Removed the hardcoded Firebase API Key from `src/firebase/config.ts` and replaced it with a reference to `process.env.NEXT_PUBLIC_FIREBASE_API_KEY`. Added a placeholder to `.env.example`.
+⚠️ **Risk:** Hardcoding API keys in source control exposes them to unauthorized access, potentially leading to quota abuse, billing attacks, or unauthorized access to Firebase services if security rules are misconfigured.
+🛡️ **Solution:** Sourced the API key securely from environment variables, utilizing the `NEXT_PUBLIC_` prefix required by Next.js for client-side configuration.
