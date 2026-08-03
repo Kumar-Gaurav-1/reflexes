@@ -249,7 +249,15 @@ export default function StatsPage() {
   )
 }
 
-function MetricSummaryCard({ icon, label, value, trend, color }: any) {
+interface MetricSummaryCardProps {
+  icon: React.ReactNode
+  label: string
+  value: string | number
+  trend: string
+  color: string
+}
+
+function MetricSummaryCard({ icon, label, value, trend, color }: MetricSummaryCardProps) {
   return (
     <Card className="p-10 border-none bg-white rounded-[3rem] shadow-sm space-y-4 hover:shadow-md transition-all duration-500 group">
       <div className="flex items-center gap-4">
@@ -266,7 +274,13 @@ function MetricSummaryCard({ icon, label, value, trend, color }: any) {
   )
 }
 
-function InsightCard({ title, desc, tag }: any) {
+interface InsightCardProps {
+  title: string
+  desc: string
+  tag: string
+}
+
+function InsightCard({ title, desc, tag }: InsightCardProps) {
   return (
     <Card className="p-10 border-none bg-white rounded-[3rem] shadow-sm space-y-6 group hover:bg-black hover:text-white transition-all duration-700">
       <Badge variant="secondary" className="bg-secondary text-[8px] font-black uppercase tracking-widest border-none px-4 group-hover:bg-white/10 group-hover:text-white transition-colors">
