@@ -1,0 +1,3 @@
+## 2024-05-15 - AR Drill Rendering Loop Optimization
+**Learning:** In Javascript, when dealing with nested loops over `ImageData` (TypedArrays), structuring the loops with `y` as the outer loop and `x` as the inner loop significantly improves CPU cache locality. Additionally, pulling coordinate boundary checks (`if (x < 0) ...`) out of the inner loops and pre-calculating them with `Math.max`/`Math.min` saves thousands of branch instructions per frame.
+**Action:** Always verify that nested pixel processing loops iterate in row-major order and clamp boundary values before entering the hot path to avoid continuous branch checks.
