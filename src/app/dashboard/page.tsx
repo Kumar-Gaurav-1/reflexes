@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { useUser, useDoc, useAuth, useFirestore } from "@/firebase"
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { PlaceHolderImagesMap } from '@/lib/placeholder-images'
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 
@@ -51,8 +51,6 @@ export default function DashboardPage() {
       console.error("Sign in failed", error)
     }
   }
-
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
 
   if (userLoading) return null
 
@@ -95,11 +93,11 @@ export default function DashboardPage() {
           <Card className="lg:col-span-2 overflow-hidden group border-none glass-pro rounded-[3rem]">
             <div className="relative h-[400px] w-full">
               <Image 
-                src={getImg('cricket-main')?.imageUrl || ""} 
+                src={PlaceHolderImagesMap.get('cricket-main')?.imageUrl || ""}
                 alt="Recommended" 
                 fill 
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                data-ai-hint={getImg('cricket-main')?.imageHint}
+                data-ai-hint={PlaceHolderImagesMap.get('cricket-main')?.imageHint}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent p-12 flex flex-col justify-end text-white">
                 <Badge className="w-fit mb-6 bg-primary text-[9px] font-black tracking-[0.3em] uppercase py-1.5 px-4 rounded-full border-none">Personalized Session</Badge>
@@ -195,8 +193,7 @@ function StatCard({ icon, label, value, unit, trend }: any) {
 }
 
 function CategoryCard({ title, sport, drills, imgId }: any) {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
-  const img = getImg(imgId)
+  const img = PlaceHolderImagesMap.get(imgId)
 
   return (
     <Link href={`/drills/${sport}`} className="group">
