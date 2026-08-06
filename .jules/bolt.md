@@ -1,0 +1,3 @@
+## $(date +%Y-%m-%d) - Optimize pixel processing loop bounds and memory access
+**Learning:** In canvas rendering and pixel processing tasks inside loops within `detectMotion`, computing bounds checks (`x < 0`, `x >= 160`, etc) inside heavily nested loops and traversing columns before rows causes branch prediction misses and breaks cache locality.
+**Action:** When working on dense pixel arrays (`ImageData.data`), always swap nested loops to be `y` (row) on the outside and `x` (column) on the inside for row-major contiguous memory access. Pre-clamp limits outside the loop (`Math.max`, `Math.min`) to avoid per-iteration conditional checks.
