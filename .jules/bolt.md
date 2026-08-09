@@ -1,0 +1,3 @@
+## 2026-08-09 - Image Data Array Iteration Cache Locality
+**Learning:** In Next.js/React applications involving high-frequency `requestAnimationFrame` canvas processing, iterating through `ImageData` pixel arrays row-by-row (outer loop `y`, inner loop `x`) significantly improves cache locality compared to column-by-column, leading to faster execution times. Additionally, pre-clamping bounds using `Math.max` and `Math.min` before nested loops avoids costly conditional branch evaluations on every pixel iteration.
+**Action:** When writing nested loops for 2D coordinate processing (like canvas or image data) in future AR or vision-heavy components, always structure loops to enforce contiguous row-major memory access and extract bounds checking to the outer scope.
