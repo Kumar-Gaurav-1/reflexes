@@ -1,0 +1,3 @@
+## 2024-05-15 - AR Motion Detection Optimization
+**Learning:** High-frequency `requestAnimationFrame` loops in AR components are extremely sensitive to garbage collection stutters from allocating small arrays (like `cornerSamples`) on each frame, and performance degrades rapidly when processing 2D pixel data if the inner loop iterates over rows instead of columns (breaking cache locality), or if boundary checks are performed inside the innermost loop instead of clamped beforehand.
+**Action:** Unroll static arrays in high-frequency loops. Clamp boundary indices outside nested pixel loops. Always iterate over `y` (rows) in the outer loop and `x` (columns) in the inner loop when scanning `ImageData` to maximize contiguous row-major memory access.
