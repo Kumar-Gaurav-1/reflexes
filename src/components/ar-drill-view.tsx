@@ -204,12 +204,16 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const prevData = prevFrameRef.current.data
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
-      let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      // Optimization: Unroll array and precalculate offsets to avoid GC micro-stutters in frame loop
+      // {x: 5, y: 5} -> (5 * 160 + 5) * 4 = 3220
+      // {x: 155, y: 5} -> (5 * 160 + 155) * 4 = 3820
+      // {x: 5, y: 115} -> (115 * 160 + 5) * 4 = 73620
+      // {x: 155, y: 115} -> (115 * 160 + 155) * 4 = 74220
+      const p1 = 3220, p2 = 3820, p3 = 73620, p4 = 74220;
+      const globalMotionSum = Math.abs(data[p1] - prevData[p1]) +
+                              Math.abs(data[p2] - prevData[p2]) +
+                              Math.abs(data[p3] - prevData[p3]) +
+                              Math.abs(data[p4] - prevData[p4]);
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
