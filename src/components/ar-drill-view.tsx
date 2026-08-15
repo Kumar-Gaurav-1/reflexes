@@ -204,12 +204,12 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const prevData = prevFrameRef.current.data
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
-      let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      // ⚡ Bolt Optimization: Unrolled GC-friendly corner checks (avoids array allocation + forEach per frame)
+      let globalMotionSum =
+        Math.abs(data[3220] - prevData[3220]) +       // (5 * 160 + 5) * 4 = 3220
+        Math.abs(data[3820] - prevData[3820]) +       // (5 * 160 + 155) * 4 = 3820
+        Math.abs(data[73620] - prevData[73620]) +     // (115 * 160 + 5) * 4 = 73620
+        Math.abs(data[74220] - prevData[74220]);      // (115 * 160 + 155) * 4 = 74220
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -225,13 +225,19 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // ⚡ Bolt Optimization: Hoisted bounds checking and loop reversed for cache locality
+          const minY = Math.max(0, canvasY - searchRadius);
+          const maxY = Math.min(120, canvasY + searchRadius);
+          const minX = Math.max(0, canvasX - searchRadius);
+          const maxX = Math.min(160, canvasX + searchRadius);
+
+          for (let y = minY; y < maxY; y++) {
+            const yOffset = y * 160;
+            for (let x = minX; x < maxX; x++) {
+              const pos = (yOffset + x) * 4;
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
-                           Math.abs(data[pos+2] - prevData[pos+2])
+                           Math.abs(data[pos+2] - prevData[pos+2]);
               
               if (diff > 180) { // High intensity change
                 motionDensity++
