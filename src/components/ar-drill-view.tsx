@@ -203,13 +203,17 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const data = currentFrame.data
       const prevData = prevFrameRef.current.data
       
+      // ⚡ Bolt Performance Optimization
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
-      let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      // Unrolled static array and direct assignment to prevent GC micro-stutters
+      const pos1 = (5 * 160 + 5) * 4;
+      const pos2 = (5 * 160 + 155) * 4;
+      const pos3 = (115 * 160 + 5) * 4;
+      const pos4 = (115 * 160 + 155) * 4;
+      const globalMotionSum = Math.abs(data[pos1] - prevData[pos1]) +
+                              Math.abs(data[pos2] - prevData[pos2]) +
+                              Math.abs(data[pos3] - prevData[pos3]) +
+                              Math.abs(data[pos4] - prevData[pos4]);
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -224,11 +228,19 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // ⚡ Bolt Performance Optimization
+          // Pre-calculate boundary clamping to avoid O(N) operations within loop body
+          const minX = Math.max(0, canvasX - searchRadius);
+          const maxX = Math.min(160, canvasX + searchRadius);
+          const minY = Math.max(0, canvasY - searchRadius);
+          const maxY = Math.min(120, canvasY + searchRadius);
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // Reverse loop order (Y outer, X inner) to enforce sequential cache locality
+          for (let y = minY; y < maxY; y++) {
+            const yOffset = y * 160;
+            for (let x = minX; x < maxX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
