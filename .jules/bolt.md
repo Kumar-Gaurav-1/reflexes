@@ -1,0 +1,3 @@
+## 2024-05-19 - AR Loop Micro-Optimizations
+**Learning:** In high-frequency `requestAnimationFrame` AR loops, creating new objects/arrays and using `.forEach` causes GC stutter. Nested 2D array processing is significantly slowed by column-major iteration and per-pixel conditional bounding checks inside the hot loop.
+**Action:** Unroll small static arrays (like corner samples) to avoid `.forEach`. Swap nested loops to row-major (y outer, x inner) to maximize CPU cache locality. Pre-calculate clamped boundary limits (`Math.max(0, ...)` and `Math.min(max, ...)`) before nested loops to skip conditional branching entirely.
