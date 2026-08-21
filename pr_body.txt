@@ -1,0 +1,7 @@
+💡 What: Optimized the high-frequency `requestAnimationFrame` object detection loop in `ar-drill-view.tsx` by unrolling the `cornerSamples` array to eliminate `.forEach()` garbage collection, pre-calculating and clamping array boundaries to skip per-iteration branching logic, and swapping the nested coordinate loop from column-major to row-major to maximize CPU cache locality.
+
+🎯 Why: The original detection routine ran conditional branches inside an $O(N \times M)$ nested loop processing a 1D pixel array on every frame, and mapped array creation overhead. These constant micro-allocations trigger JS Garbage Collection, leading to visible stutter in AR tracking. Cache misses in column-major processing further compounded frame-time latency.
+
+📊 Impact: Reduces GC micro-stutters and drastically decreases loop execution time by taking advantage of sequential memory access patterns for the image data arrays.
+
+🔬 Measurement: Verifiable by monitoring memory heap allocation profiling in the browser dev tools, checking that GC drops are less aggressive during active training states compared to main.
