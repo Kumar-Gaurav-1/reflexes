@@ -1,0 +1,3 @@
+## 2024-05-19 - AR Rendering Loop Micro-stutter and Cache Misses
+**Learning:** In high-frequency `requestAnimationFrame` loops for kinetic processing, allocating temporary arrays and using `.forEach()` causes GC micro-stutters. Additionally, iterating image data (row-major) with columns as the outer loop destroys cache locality. Also bounds checking inside the loop causes unnecessary performance overhead.
+**Action:** Unroll static arrays to avoid allocation, pre-clamp loop boundaries, and always structure nested loops with `y` (rows) outer and `x` (columns) inner for contiguous memory access in pixel processing.
