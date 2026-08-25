@@ -1,0 +1,3 @@
+## 2024-03-05 - Optimize RequestAnimationFrame Loops and Array Scanning
+**Learning:** In high-frequency rendering loops (`requestAnimationFrame`), array allocations (e.g. `const cornerSamples = [...]`) and iteration methods (e.g. `.forEach()`) can cause garbage collection (GC) micro-stutters. Also, nested loops traversing an image buffer perform better when structured row-major (outer loop `y`, inner loop `x`) due to cache locality, and clamping array boundaries outside the loop prevents redundant conditional checks on every iteration.
+**Action:** Unroll static arrays into direct variable assignments, swap nested pixel-processing loops to row-major order (`y` then `x`), and pre-calculate/clamp bounding boxes outside the nested loops for max performance.
