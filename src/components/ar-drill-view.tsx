@@ -224,10 +224,16 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // ⚡ Bolt Optimization: Pre-clamp bounds to avoid inner-loop conditionals
+          // and iterate row-major (y outer, x inner) for improved cache locality.
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          for (let y = startY; y < endY; y++) {
+            for (let x = startX; x < endX; x++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
