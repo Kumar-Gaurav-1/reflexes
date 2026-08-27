@@ -1,0 +1,7 @@
+💡 What: Optimized the `detectMotion` rendering loop by avoiding allocations and optimizing the 2D array traversal for cache locality. Unrolled `cornerSamples` to prevent per-frame array allocations and `forEach` calls. Reordered the inner nested loops to be row-major (outer `y`, inner `x`) and clamped boundary checks using `Math.max`/`Math.min` ahead of time to eliminate conditional bounds checking inside the loop.
+
+🎯 Why: The `detectMotion` function relies on `requestAnimationFrame` and `getImageData`, rendering the kinetic isolation heavily dependent on processing raw 2D pixel arrays. Every microsecond saved and allocation avoided helps prevent jank and Garbage Collection stutter, making optical detection more accurate.
+
+📊 Impact: Reduces intermediate object allocations to 0 per frame for corner sampling. Eliminates `120 * 160 = ~19k` conditional branches per frame within the nested loops, and improves processor L1 cache hit rates by accessing the `Uint8ClampedArray` predictably via contiguous row-major offsets.
+
+🔬 Measurement: Verify changes in the `src/components/ar-drill-view.tsx` loop structure. Monitor standard profiling tools (like Chrome DevTools Performance tab) for decreased JS Heap memory allocations over time and lower frame duration in `detectMotion`.
