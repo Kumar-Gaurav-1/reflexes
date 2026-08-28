@@ -1,0 +1,3 @@
+## 2024-05-23 - Optimizing High-Frequency requestAnimationFrame Loops
+**Learning:** In high-frequency loops like `requestAnimationFrame` (e.g., AR tracking or canvas rendering), allocating new objects or arrays and using methods like `.forEach()` can cause Garbage Collection micro-stutters. Also, bounds checking inside nested loops for pixel processing is expensive.
+**Action:** Unroll static arrays and use direct variable assignments instead. Clamp array boundaries before entering nested loops to avoid conditional bounds checks on every iteration. For cache locality in 2D pixel processing (e.g., iterating over image data arrays), structure nested loops with `y` (rows) as the outer loop and `x` (columns) as the inner loop to ensure contiguous, row-major memory access.
