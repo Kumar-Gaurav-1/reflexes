@@ -1,0 +1,15 @@
+💡 **What:**
+Replaced O(N) array `.find()` lookups with an O(1) precomputed Map (`PlaceHolderImageMap`) for image resolving in React components.
+
+🎯 **Why:**
+The application previously executed `PlaceHolderImages.find(img => img.id === id)` repeatedly inside component render cycles (e.g., in `LandingPage`, `TrainingHubPage`, `CategoryCard` lists). This O(N) operation runs synchronously on the main thread and can bottleneck render performance as the list of placeholder images grows, causing micro-stutters during rendering.
+
+📊 **Impact:**
+- Reduces time complexity of image lookups from O(N) to O(1).
+- Eliminates unnecessary array traversal loops per render.
+- Memory overhead is negligible as it merely references existing image objects.
+
+🔬 **Measurement:**
+- Verify the build succeeds via `npm run build`.
+- Observe that component renders correctly with placeholder images still correctly resolved visually.
+- (Further profiling via React DevTools Profiler would confirm reduced render duration, though expected to be a micro-optimization now, it prevents future scaling issues).
