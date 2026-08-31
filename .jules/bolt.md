@@ -1,0 +1,3 @@
+## 2024-05-24 - O(1) Map Lookups Over O(N) Array .find() in Render Loops
+**Learning:** Calling an O(N) array `.find()` method during React component render loops (especially inside functional components or iterated elements like mapping arrays) causes redundant computation on every re-render. Redeclaring the lookup function inside the component closure further exacerbates this by recreating the function object.
+**Action:** Precompute a `Map` (or dictionary) of the data outside the component module scope to achieve O(1) lookups via `Map.prototype.get()`. Move helper lookup functions outside of component definitions to prevent unnecessary redeclarations during renders.
