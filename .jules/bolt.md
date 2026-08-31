@@ -1,0 +1,3 @@
+## 2024-03-01 - Optimizing 2D Array Traversal for AR Motion Tracking
+**Learning:** High-frequency pixel processing in requestAnimationFrame loops (e.g. motion detection with video elements and canvas `getImageData`) can suffer severely from allocating small objects on every frame (like `[{x,y}]` array definitions) and performing conditional bounds-checks (`if(x < 0 || ...)`) inside nested X/Y coordinate iteration logic.
+**Action:** Unroll static inner arrays/allocations into pre-calculated static positional index integers outside loops where possible. Pre-clamp `for` loop boundaries using `Math.max(0, start)` and `Math.min(max, end)` rather than performing per-pixel conditional skips to achieve massive speedups in JavaScript hot loops.
