@@ -17,6 +17,9 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { errorEmitter } from '@/firebase/error-emitter'
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors'
 
+const PlaceHolderImagesMap = new Map(PlaceHolderImages.map(img => [img.id, img]))
+const getImg = (id: string) => PlaceHolderImagesMap.get(id)
+
 export default function DashboardPage() {
   const { user, loading: userLoading } = useUser()
   const auth = useAuth()
@@ -52,7 +55,6 @@ export default function DashboardPage() {
     }
   }
 
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
 
   if (userLoading) return null
 
@@ -195,7 +197,6 @@ function StatCard({ icon, label, value, unit, trend }: any) {
 }
 
 function CategoryCard({ title, sport, drills, imgId }: any) {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
   const img = getImg(imgId)
 
   return (
