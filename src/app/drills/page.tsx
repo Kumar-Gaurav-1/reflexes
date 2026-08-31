@@ -8,7 +8,7 @@ import { Search, SlidersHorizontal, ChevronRight, Zap, BrainCircuit } from "luci
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { PlaceHolderImagesMap } from "@/lib/placeholder-images"
 
 const categories = [
   { id: 'all', label: 'All Domains' },
@@ -57,7 +57,7 @@ const sports = [
 ]
 
 export default function TrainingHubPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+
 
   return (
     <div className="min-h-screen bg-background pb-32 sm:pb-0">
@@ -100,7 +100,7 @@ export default function TrainingHubPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {sports.map((sport) => {
-            const img = getImg(sport.imgId)
+            const img = PlaceHolderImagesMap.get(sport.imgId)
             return (
               <Link key={sport.id} href={`/drills/${sport.id}`} className="group">
                 <Card className="relative h-[500px] overflow-hidden rounded-[3.5rem] border-none group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-700">
@@ -152,11 +152,11 @@ export default function TrainingHubPage() {
               </div>
               <div className="relative aspect-video rounded-[3rem] overflow-hidden border border-white/10">
                 <Image 
-                  src={getImg('circuit-main')?.imageUrl || ""} 
+                  src={PlaceHolderImagesMap.get('circuit-main')?.imageUrl || ""}
                   alt="Circuit" 
                   fill 
                   className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-[2s]"
-                  data-ai-hint={getImg('circuit-main')?.imageHint}
+                  data-ai-hint={PlaceHolderImagesMap.get('circuit-main')?.imageHint}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-xl flex items-center justify-center border border-primary/20 animate-pulse">

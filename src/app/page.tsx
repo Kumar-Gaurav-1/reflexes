@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Target, Zap, BrainCircuit, ChevronRight, Play, ArrowRight, Activity, Timer } from 'lucide-react'
-import { PlaceHolderImages } from '@/lib/placeholder-images'
+import { PlaceHolderImagesMap } from '@/lib/placeholder-images'
 import { cn } from '@/lib/utils'
 
 const sports = [
@@ -21,7 +21,7 @@ const sports = [
 ]
 
 export default function LandingPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -79,7 +79,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {sports.map((sport) => {
-                const img = getImg(sport.imgId)
+                const img = PlaceHolderImagesMap.get(sport.imgId)
                 return (
                   <Link key={sport.id} href={`/onboarding/${sport.id}`} className="group">
                     <Card className="relative h-[480px] overflow-hidden rounded-[3.5rem] border-none group-hover:shadow-2xl transition-all duration-700 hover:-translate-y-2">
