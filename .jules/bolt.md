@@ -1,0 +1,5 @@
+## 2024-09-03 - High-Frequency Loop Optimization in requestAnimationFrame
+
+**Learning:** When executing code inside `requestAnimationFrame` (like `detectMotion` in `ar-drill-view.tsx`), generating new object/array allocations (e.g., `const cornerSamples = [{x: 5, y: 5}, ...]`) and using iteration methods like `.forEach` cause unnecessary garbage collection micro-stutters and overhead. Furthermore, executing unoptimized bounds checks *inside* nested pixel-processing loops (e.g., checking `x < 0 || x >= 160 || y < 0 || y >= 120` inside the loop) wastes CPU cycles. Also, iterating `x` then `y` (column-major) instead of `y` then `x` (row-major) causes cache misses when reading contiguous 1D arrays like `ImageData`.
+
+**Action:** Unroll static arrays and use direct variable assignments or simple `for` loops in hot paths to avoid GC spikes. Clamp array boundaries (`Math.max`, `Math.min`) *before* entering nested pixel processing loops to eliminate inner-loop conditional checks. Always structure nested 2D loops with `y` (rows) as the outer loop and `x` (columns) as the inner loop to ensure row-major, contiguous memory access.
