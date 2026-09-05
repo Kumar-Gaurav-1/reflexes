@@ -203,13 +203,15 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const data = currentFrame.data
       const prevData = prevFrameRef.current.data
       
-      // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
-      let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      // ⚡ Bolt: Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
+      // Pre-calculated byte positions for corners: (y * 160 + x) * 4
+      // 5,5 -> 3220 | 155,5 -> 3820 | 5,115 -> 73620 | 155,115 -> 74220
+      // Eliminates array allocation and .forEach in requestAnimationFrame
+      let globalMotionSum =
+        Math.abs(data[3220] - prevData[3220]) +
+        Math.abs(data[3820] - prevData[3820]) +
+        Math.abs(data[73620] - prevData[73620]) +
+        Math.abs(data[74220] - prevData[74220]);
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -220,15 +222,20 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
           const canvasY = Math.floor((target.y / 100) * 120)
           
-          const searchRadius = 8
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // ⚡ Bolt: Pre-calculate bounds to avoid per-pixel conditionals and swap loops for cache locality (row-major)
+          const startY = Math.max(0, canvasY - 8)
+          const endY = Math.min(120, canvasY + 8)
+          const startX = Math.max(0, canvasX - 8)
+          const endX = Math.min(160, canvasX + 8)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          for (let y = startY; y < endY; y++) {
+            const rowOffset = y * 160;
+            for (let x = startX; x < endX; x++) {
+              const pos = (rowOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
