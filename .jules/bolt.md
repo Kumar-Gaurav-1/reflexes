@@ -1,0 +1,3 @@
+## 2024-09-09 - AR Tracking Loop Optimization
+**Learning:** High-frequency `requestAnimationFrame` loops (like the `detectMotion` function processing video frames) are extremely sensitive to Garbage Collection stutters caused by array allocations (`[].forEach`) and inefficient cache usage in 2D array iteration.
+**Action:** Unroll small static loops, replace array iteration methods (`.forEach`) with `for...of` loops to avoid closures, pre-calculate and clamp loop bounds to avoid expensive per-pixel conditional checks, and always iterate over 1D representations of 2D image data in row-major order (y outer, x inner) for contiguous memory access and better CPU cache locality.
