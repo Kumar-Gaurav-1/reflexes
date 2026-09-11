@@ -203,18 +203,26 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const data = currentFrame.data
       const prevData = prevFrameRef.current.data
       
+      // ⚡ Bolt: Optimize requestAnimationFrame memory and cache locality
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+
+      // Unroll static array and avoid .forEach allocation
+      const p1Pos = (5 * 160 + 5) * 4;
+      const p2Pos = (5 * 160 + 155) * 4;
+      const p3Pos = (115 * 160 + 5) * 4;
+      const p4Pos = (115 * 160 + 155) * 4;
+
+      globalMotionSum += Math.abs(data[p1Pos] - prevData[p1Pos]);
+      globalMotionSum += Math.abs(data[p2Pos] - prevData[p2Pos]);
+      globalMotionSum += Math.abs(data[p3Pos] - prevData[p3Pos]);
+      globalMotionSum += Math.abs(data[p4Pos] - prevData[p4Pos]);
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
         const activeTargets = targetsRef.current
-        activeTargets.forEach(target => {
+        for (let i = 0; i < activeTargets.length; i++) {
+          const target = activeTargets[i]
           // Mirror correction for coordinates
           const rawFrameXPercent = 100 - target.x
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
@@ -224,10 +232,16 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // Pre-calculate loop boundaries to avoid per-pixel conditionals
+          const startX = Math.max(0, canvasX - searchRadius);
+          const endX = Math.min(160, canvasX + searchRadius);
+          const startY = Math.max(0, canvasY - searchRadius);
+          const endY = Math.min(120, canvasY + searchRadius);
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          // Structure loops with y (rows) outer and x (cols) inner for cache locality
+          for (let y = startY; y < endY; y++) {
+            for (let x = startX; x < endX; x++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
@@ -244,7 +258,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           if (motionSnapCount > 4 && motionDensity > 6 && motionDensity < 40) {
             handleHitRef.current?.(target.id, target.x, target.y)
           }
-        })
+        }
       }
     }
 

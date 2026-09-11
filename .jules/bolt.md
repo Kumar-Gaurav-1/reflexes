@@ -1,0 +1,3 @@
+## 2024-09-11 - Optimize requestAnimationFrame high-frequency loops
+**Learning:** High-frequency pixel processing in `requestAnimationFrame` loops suffers from GC micro-stutters when allocating objects inside the loop (e.g. `[{x: 5, y: 5}, ...]`), using array iteration methods (`.forEach`), having poor cache locality (iterating `x` outside `y` for row-major image data arrays), or evaluating per-pixel conditionals for loop bounds.
+**Action:** Unroll static arrays and object allocations outside the loop or avoid them, use standard `for` loops, always structure 2D image data iterations with `y` (rows) as the outer loop and `x` (cols) as the inner loop, and pre-calculate and clamp loop boundaries outside the nested loops using `Math.max` and `Math.min`.
