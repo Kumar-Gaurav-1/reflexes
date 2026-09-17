@@ -1,0 +1,3 @@
+## 2024-05-18 - AR Loop Optimization
+**Learning:** In high-frequency `requestAnimationFrame` loops parsing ImageData, nesting X as the outer loop and Y as the inner loop causes poor cache locality (column-major iteration on row-major data). Additionally, conditional bounds checking (`if (x < 0 || x >= 160...) continue`) inside the hot loop causes significant CPU branch mispredictions.
+**Action:** When processing 2D image data arrays, always use Y (rows) for the outer loop and X (columns) for the inner loop. Precalculate and clamp loop boundaries with `Math.max()` and `Math.min()` outside the nested loops to eliminate expensive per-pixel branch evaluations.
