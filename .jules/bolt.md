@@ -1,0 +1,3 @@
+## 2024-05-20 - Optimizing requestAnimationFrame Canvas Analysis Loops
+**Learning:** High-frequency pixel analysis loops in `requestAnimationFrame` suffer micro-stutters when repeatedly creating array allocations (e.g. `[{x:5,y:5}, ...]`) and using iterator methods like `.forEach()`. Further, inner loop conditional branch evaluations (like checking if bounds are < 0 or >= width/height per pixel) create unnecessary overhead that slows down execution.
+**Action:** Unroll small static array allocations into direct variable assignments, and pre-clamp bounds before nested loops (`Math.max(0, start)`, `Math.min(max, end)`) to avoid per-pixel conditional evaluations. Ensure the outer loop is `y` (rows) and inner is `x` (cols) to respect contiguous memory layout.
