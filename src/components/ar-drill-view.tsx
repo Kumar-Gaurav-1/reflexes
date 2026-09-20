@@ -224,11 +224,18 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // Pre-calculate and clamp loop boundaries outside the nested loop
+          const minX = Math.max(0, canvasX - searchRadius)
+          const maxX = Math.min(160, canvasX + searchRadius)
+          const minY = Math.max(0, canvasY - searchRadius)
+          const maxY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // Optimized loop order: y outer, x inner for contiguous row-major memory access (cache locality)
+          for (let y = minY; y < maxY; y++) {
+            const yOffset = y * 160
+            for (let x = minX; x < maxX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
