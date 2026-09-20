@@ -1,0 +1,3 @@
+## 2025-09-20 - Optimize kinetic motion tracking pixel loop
+**Learning:** In a high-frequency `requestAnimationFrame` loop that processes image pixel data, iterating over a 2D region using an x-outer/y-inner loop causes non-contiguous memory access. When dealing with raw `ImageData`, this defeats cache locality. Additionally, placing condition checks for out-of-bounds pixels (`if (x < 0 || x >= 160 ...) continue`) inside the hot innermost loop is extremely expensive per-pixel.
+**Action:** Always pre-calculate and clamp loop boundaries using `Math.min` and `Math.max` outside the loop, and use y-outer/x-inner loop structure to ensure row-major memory access for cache locality when working with 1D pixel arrays representing 2D regions.
