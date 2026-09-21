@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Target, Zap, BrainCircuit, ChevronRight, Play, ArrowRight, Activity, Timer } from 'lucide-react'
-import { PlaceHolderImages } from '@/lib/placeholder-images'
+import { PlaceHolderImages, getImg } from '@/lib/placeholder-images'
 import { cn } from '@/lib/utils'
 
 const sports = [
@@ -21,8 +21,6 @@ const sports = [
 ]
 
 export default function LandingPage() {
-  const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id)
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full glass">
