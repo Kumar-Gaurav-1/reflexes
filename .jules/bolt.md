@@ -1,0 +1,3 @@
+## 2024-09-25 - AR Tracking Loop Optimizations
+**Learning:** For high-frequency `requestAnimationFrame` loops like pixel processing in AR tracking, allocating new objects/arrays (e.g., `[{x: 5, y: 5}, ...]`) and using array iteration methods (`.forEach()`) can cause Garbage Collection micro-stutters. Furthermore, evaluating conditional branches (e.g., checking `if (x < 0 || x >= 160)`) on a per-pixel basis within deeply nested loops introduces significant overhead.
+**Action:** Unroll static arrays into direct variable assignments and property access. Pre-calculate and clamp loop boundaries outside nested loops (e.g., using `Math.max` and `Math.min`) to avoid expensive conditional branches inside the loop body.
