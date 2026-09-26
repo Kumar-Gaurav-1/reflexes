@@ -1,0 +1,3 @@
+## 2024-09-26 - Unrolling Object Allocations and Pre-calculating Loop Bounds in High-Frequency `requestAnimationFrame` Loops
+**Learning:** For high-frequency loops, such as per-pixel image processing in `requestAnimationFrame` for AR hand tracking, internal object/array allocations and per-pixel conditional boundary checks (`if (x < 0 || x >= 160 || y < 0 || y >= 120)`) introduce significant overhead and Garbage Collection micro-stutters.
+**Action:** Unroll static array loops (e.g., corner sampling arrays) into explicit variable lookups to prevent GC overhead. For nested search loops over coordinate bounds, use `Math.max` and `Math.min` outside the loop to calculate and clamp the start and end coordinates explicitly, avoiding branching logic per-iteration entirely.
