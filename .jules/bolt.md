@@ -1,0 +1,3 @@
+## 2025-02-17 - [Optimized high-frequency requestAnimationFrame pixel scanning loop]
+**Learning:** [Allocating arrays/objects inside high-frequency requestAnimationFrame loops (like `[{x: 5, y: 5}, ...]`) and using array iterators (`.forEach()`), as well as executing dynamic conditional boundary checks inside nested loops, causes severe Garbage Collection (GC) micro-stutters and wastes CPU cycles, resulting in dropped frames during AR motion detection.]
+**Action:** [When processing raw pixel data (like `ImageData`) in requestAnimationFrame, unroll static arrays directly into inline code assignments and pre-calculate loop boundaries (using `Math.max` and `Math.min`) strictly outside the nested pixel processing loops to achieve zero-allocation and optimal performance.]
