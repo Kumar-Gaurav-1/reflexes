@@ -1,0 +1,3 @@
+## 2023-10-01 - Optimize AR Drill High-Frequency Rendering Loop
+**Learning:** In high-frequency rendering loops like `requestAnimationFrame`, allocating new objects/arrays (e.g., `cornerSamples = [{x:5, y:5}, ...]`) and using array iteration methods (like `.forEach()`) cause Garbage Collection micro-stutters. Furthermore, evaluating conditional branches inside a nested pixel-processing loop is extremely expensive and slows down frame rates.
+**Action:** Unroll static arrays and assign variables directly. Pre-calculate and clamp nested loop boundaries using `Math.max` and `Math.min` outside the loop to avoid per-pixel conditional branch evaluations.
