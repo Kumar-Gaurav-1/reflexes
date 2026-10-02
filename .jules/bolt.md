@@ -1,0 +1,3 @@
+## 2023-10-27 - Optimize AR Tracking Loop
+**Learning:** High-frequency `requestAnimationFrame` loops (like AR kinetic tracking) suffer from Garbage Collection micro-stutters when allocating per-frame objects (like `cornerSamples` arrays) or executing array iteration methods (`.forEach()`). Furthermore, per-pixel loop boundary checks inside nested loops cause expensive conditional branch evaluation.
+**Action:** Unroll static arrays and pre-calculate loop boundaries (`Math.max`, `Math.min`) outside nested loops to avoid GC pressure and unnecessary conditional evaluations in high-performance render paths.
