@@ -1,0 +1,3 @@
+## 2024-10-04 - Optimize `detectMotion` Loop in AR Drill View
+**Learning:** `detectMotion` is called by `requestAnimationFrame`, causing micro-stutters when it continually iterates through active targets and corners using `.forEach()` inside a `160x120` canvas area, while allocating arrays and objects for detecting kinetic interactions (motion density, velocity). Also, it checks loop boundary conditions on every inner loop iteration.
+**Action:** Unroll static arrays, use direct calculations to prevent micro-allocations on every single frame. Pre-calculate and clamp loop boundaries (e.g., using `Math.max` and `Math.min`) outside the nested loops to avoid expensive per-pixel conditional branch evaluations.
