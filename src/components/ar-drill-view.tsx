@@ -205,11 +205,16 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+      // ⚡ Bolt: Unrolled static array loop to prevent GC micro-stutters in requestAnimationFrame
+      const posTL = (5 * 160 + 5) * 4
+      const posTR = (5 * 160 + 155) * 4
+      const posBL = (115 * 160 + 5) * 4
+      const posBR = (115 * 160 + 155) * 4
+
+      globalMotionSum += Math.abs(data[posTL] - prevData[posTL])
+      globalMotionSum += Math.abs(data[posTR] - prevData[posTR])
+      globalMotionSum += Math.abs(data[posBL] - prevData[posBL])
+      globalMotionSum += Math.abs(data[posBR] - prevData[posBR])
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
@@ -224,10 +229,15 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionSnapCount = 0
           let motionDensity = 0
           
+          // ⚡ Bolt: Pre-calculate loop boundaries to avoid expensive per-pixel conditional branches
+          const minX = Math.max(0, canvasX - searchRadius)
+          const maxX = Math.min(160, canvasX + searchRadius)
+          const minY = Math.max(0, canvasY - searchRadius)
+          const maxY = Math.min(120, canvasY + searchRadius)
+
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          for (let x = minX; x < maxX; x++) {
+            for (let y = minY; y < maxY; y++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
