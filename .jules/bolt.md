@@ -1,0 +1,3 @@
+## 2025-02-27 - RequestAnimationFrame Loop Optimization
+**Learning:** In high-frequency `requestAnimationFrame` loops (like AR kinetic tracking or canvas pixel manipulation), relying on array iteration methods (e.g., `.forEach()`) and allocating new objects inside the loop creates constant garbage collection micro-stutters. Furthermore, evaluating conditional boundaries inside deep nested loops (like per-pixel processing) introduces significant branch prediction overhead.
+**Action:** Unroll static, small arrays into direct variable assignments to prevent allocation overhead. Pre-calculate and clamp loop boundaries outside the nested loops (e.g., using `Math.max` and `Math.min`) to avoid expensive, repetitive conditional branch evaluations on every pixel iteration.
