@@ -204,17 +204,27 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const prevData = prevFrameRef.current.data
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
+      // Optimized: Unrolled loop avoids allocating an array and closures per frame
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+
+      const pos1 = (5 * 160 + 5) * 4
+      globalMotionSum += Math.abs(data[pos1] - prevData[pos1])
+
+      const pos2 = (5 * 160 + 155) * 4
+      globalMotionSum += Math.abs(data[pos2] - prevData[pos2])
+
+      const pos3 = (115 * 160 + 5) * 4
+      globalMotionSum += Math.abs(data[pos3] - prevData[pos3])
+
+      const pos4 = (115 * 160 + 155) * 4
+      globalMotionSum += Math.abs(data[pos4] - prevData[pos4])
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
         const activeTargets = targetsRef.current
-        activeTargets.forEach(target => {
+        // Optimized: Standard for-loop avoids creating closures on each frame
+        for (let i = 0; i < activeTargets.length; i++) {
+          const target = activeTargets[i]
           // Mirror correction for coordinates
           const rawFrameXPercent = 100 - target.x
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
@@ -225,9 +235,15 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
+          // Optimized: Pre-calculate and clamp loop boundaries outside the inner loop
+          // to eliminate expensive conditional branch evaluations per pixel
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+
+          for (let x = startX; x < endX; x++) {
+            for (let y = startY; y < endY; y++) {
               const pos = (y * 160 + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
@@ -244,7 +260,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           if (motionSnapCount > 4 && motionDensity > 6 && motionDensity < 40) {
             handleHitRef.current?.(target.id, target.x, target.y)
           }
-        })
+        }
       }
     }
 
