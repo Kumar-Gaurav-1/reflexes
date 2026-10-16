@@ -1,0 +1,3 @@
+## 2024-05-19 - requestAnimationFrame high-frequency loop optimization
+**Learning:** In high-frequency requestAnimationFrame loops (like AR tracking or canvas rendering), allocating new objects/arrays and using array iteration methods like `.forEach()` causes Garbage Collection micro-stutters. Also, expensive per-pixel conditional branch evaluations inside nested loops degrade performance.
+**Action:** Unroll static arrays, use direct variable assignments, and pre-calculate and clamp loop boundaries (e.g., using `Math.max` and `Math.min`) outside nested loops to avoid per-pixel conditionals and object allocations.
