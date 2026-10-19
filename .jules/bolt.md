@@ -1,0 +1,3 @@
+## 2024-10-19 - Fast Nested Pixel Processing in requestAnimationFrame
+**Learning:** High-frequency pixel processing functions inside `requestAnimationFrame` (like hit detection in AR) can suffer from overhead from per-pixel branch evaluations (e.g. `if (x < 0 || x >= 160) continue`) and non-sequential memory access when iterating `x` before `y`.
+**Action:** Always pre-calculate and clamp bounds externally using `Math.max` and `Math.min`. Furthermore, match iteration order to memory layout (row-major: iterate `y` then `x`) and hoist row-invariant calculations (like `y * width`) out of the inner loop to minimize computation.
