@@ -1,0 +1,4 @@
+💡 What: Optimized the nested canvas pixel processing loops in `detectMotion` inside `src/components/ar-drill-view.tsx`.
+🎯 Why: The original nested loops traversed columns first (`x` then `y`) and checked boundary conditions inside the inner loop for every pixel (`x < 0 || x >= 160 || y < 0 || y >= 120`), which is extremely slow on high-frequency calls like `requestAnimationFrame`. Swapped the loop order to row-major memory order (to improve CPU cache hit rates) and hoisted the boundary math and constant multipliers outside of the loops.
+📊 Impact: Considerably faster per-frame evaluation, minimizing UI stuttering/jank and freeing up main-thread overhead during intense kinetic camera evaluations.
+🔬 Measurement: Use Next.js development performance tracking and visual Chrome dev tools (Performance > Main Thread CPU usage) while playing drills to see the reduced cycle time per `detectMotion` execution.
