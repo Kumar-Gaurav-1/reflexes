@@ -204,17 +204,29 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
       const prevData = prevFrameRef.current.data
       
       // Global Motion Inhabitation: Samples corners to detect torso lean or camera shake
+      // ⚡ Bolt Optimization: Unroll array and loops to prevent garbage collection micro-stutters
       let globalMotionSum = 0
-      const cornerSamples = [{x: 5, y: 5}, {x: 155, y: 5}, {x: 5, y: 115}, {x: 155, y: 115}]
-      cornerSamples.forEach(p => {
-        const pos = (p.y * 160 + p.x) * 4
-        globalMotionSum += Math.abs(data[pos] - prevData[pos])
-      })
+
+      const pos1 = (5 * 160 + 5) * 4
+      globalMotionSum += Math.abs(data[pos1] - prevData[pos1])
+
+      const pos2 = (5 * 160 + 155) * 4
+      globalMotionSum += Math.abs(data[pos2] - prevData[pos2])
+
+      const pos3 = (115 * 160 + 5) * 4
+      globalMotionSum += Math.abs(data[pos3] - prevData[pos3])
+
+      const pos4 = (115 * 160 + 155) * 4
+      globalMotionSum += Math.abs(data[pos4] - prevData[pos4])
 
       // If global motion is too high, inhibit target neutralization
       if (globalMotionSum < 400) {
         const activeTargets = targetsRef.current
-        activeTargets.forEach(target => {
+
+        // ⚡ Bolt Optimization: Replace forEach with standard for loop to avoid GC
+        for (let i = 0; i < activeTargets.length; i++) {
+          const target = activeTargets[i]
+
           // Mirror correction for coordinates
           const rawFrameXPercent = 100 - target.x
           const canvasX = Math.floor((rawFrameXPercent / 100) * 160)
@@ -225,10 +237,17 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           let motionDensity = 0
           
           // Local High-Velocity "Snap" Signature detection
-          for (let x = canvasX - searchRadius; x < canvasX + searchRadius; x++) {
-            for (let y = canvasY - searchRadius; y < canvasY + searchRadius; y++) {
-              if (x < 0 || x >= 160 || y < 0 || y >= 120) continue
-              const pos = (y * 160 + x) * 4
+          // ⚡ Bolt Optimization: Pre-calculate bounds to avoid branching in loop,
+          // and iterate y (rows) first, then x (columns) to match row-major memory layout for better CPU cache locality
+          const startY = Math.max(0, canvasY - searchRadius)
+          const endY = Math.min(120, canvasY + searchRadius)
+          const startX = Math.max(0, canvasX - searchRadius)
+          const endX = Math.min(160, canvasX + searchRadius)
+
+          for (let y = startY; y < endY; y++) {
+            const yOffset = y * 160
+            for (let x = startX; x < endX; x++) {
+              const pos = (yOffset + x) * 4
               const diff = Math.abs(data[pos] - prevData[pos]) + 
                            Math.abs(data[pos+1] - prevData[pos+1]) + 
                            Math.abs(data[pos+2] - prevData[pos+2])
@@ -244,7 +263,7 @@ export function ARDrillView({ sport, drillName, onComplete }: ARDrillViewProps) 
           if (motionSnapCount > 4 && motionDensity > 6 && motionDensity < 40) {
             handleHitRef.current?.(target.id, target.x, target.y)
           }
-        })
+        }
       }
     }
 
