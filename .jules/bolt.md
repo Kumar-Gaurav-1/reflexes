@@ -1,0 +1,3 @@
+## 2025-02-18 - Optimize high-frequency canvas processing loop
+**Learning:** In a high-frequency `requestAnimationFrame` context parsing image pixel data, iterating in column-major order (x then y) causes CPU cache misses, while row-major order (y then x) is significantly faster. Furthermore, using `forEach` on arrays in this tight loop causes Garbage Collection micro-stutters, and dynamically calculating loop limits with per-pixel `continue` checks creates expensive branch evaluations.
+**Action:** Always process 1D image data buffers row-by-row (y loop outer, x loop inner). Pre-calculate boundary clamps with `Math.max` and `Math.min` before the loop, replace functional iterators (`.forEach`) with `for` loops, and hoist static calculations outside the innermost loops.
