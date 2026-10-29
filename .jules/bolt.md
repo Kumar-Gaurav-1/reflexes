@@ -1,0 +1,3 @@
+## 2025-02-18 - [Optimize Canvas Image Data Iteration]
+**Learning:** When processing 1D canvas image data arrays representing 2D space within a high-frequency `requestAnimationFrame` loop, iterating `y` (rows) first and then `x` (columns) significantly improves CPU cache hit rates as it matches row-major memory layout. Additionally, pre-calculating boundaries (`Math.max`/`Math.min`) and hoisting row-invariant calculations (like `y * width`) out of the inner loop avoids expensive per-pixel conditional branch evaluations and redundant math.
+**Action:** Always structure nested loops for 1D arrays of 2D data in row-major order (y then x) and aggressively hoist boundary checks and row-constant calculations out of the inner loop for high-performance visual processing.
