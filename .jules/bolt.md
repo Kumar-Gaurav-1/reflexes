@@ -1,0 +1,3 @@
+## 2024-05-15 - Optimizing 2D pixel processing in requestAnimationFrame
+**Learning:** When parsing 1D array pixel data representing 2D space inside a high-frequency `requestAnimationFrame` loop, iterating column-major (`x` then `y`) leads to poor CPU cache utilization due to jumping across memory. Additionally, allocating arrays on every frame (like `cornerSamples`) or using array methods (like `forEach`) causes garbage collection micro-stutters.
+**Action:** Always iterate `y` (rows) first, then `x` (columns) to match row-major memory layout. Pre-calculate and hoist row-invariant values (like `y * width`) out of the inner loop, and unroll static array definitions into direct variable assignments to prevent GC pauses.
