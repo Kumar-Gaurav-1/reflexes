@@ -1,0 +1,3 @@
+## 2024-11-01 - Optimize 1D Canvas Data Array Traversal
+**Learning:** When processing 1D canvas image data arrays representing 2D space, optimizing nested loops by iterating `y` (rows) first and then `x` (columns) matches row-major memory layout, which improves CPU cache hit rates. Additionally, hoisting row-invariant calculations (like `y * width`) and pre-calculating boundaries outside the inner loop minimizes computation per pixel.
+**Action:** Always traverse 1D canvas data arrays in row-major order (`y` then `x`) and extract invariants and boundaries from the innermost loops for high-frequency render or tracking loops.
