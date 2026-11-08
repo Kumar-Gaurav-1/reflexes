@@ -1,0 +1,3 @@
+## 2024-05-15 - AR Drill Motion Detection Loop Optimization
+**Learning:** In high-frequency `requestAnimationFrame` loops processing 1D canvas image data, allocating objects and iterating with array methods (like `.forEach` for corner samples) causes GC micro-stutters. Additionally, iterating `x` then `y` causes CPU cache misses, and calculating bounding boxes inside the loop is inefficient.
+**Action:** Unroll static arrays and assign variables directly. Iterate `y` (rows) first, then `x` (columns) to match row-major memory layout, which improves CPU cache hit rates. Hoist row-invariant calculations (like `y * width`) out of the inner loop, and pre-calculate and clamp loop boundaries outside the nested loops.
