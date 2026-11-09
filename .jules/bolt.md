@@ -1,0 +1,3 @@
+## 2024-11-09 - Row-major iteration for image processing loops
+**Learning:** When processing 1D canvas image data arrays representing 2D space in high-frequency loops (like `requestAnimationFrame`), iterating `y` (rows) first and then `x` (columns) significantly improves CPU cache hit rates compared to iterating `x` then `y`. Array methods like `forEach` on static data in these loops also cause micro-allocations that can lead to garbage collection stutters.
+**Action:** Always write nested image processing loops iterating over rows (`y`) then columns (`x`). Avoid `forEach` or other callback-based iteration for static arrays in `requestAnimationFrame` and unroll them or use standard `for` loops. Pre-clamp boundaries instead of branching inside inner loops.
